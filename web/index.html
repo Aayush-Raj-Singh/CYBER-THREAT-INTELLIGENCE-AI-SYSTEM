@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CTI AI System - India Focus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/ui/styles.css" />
+  </head>
+  <body>
+    <div class="canvas">
+      <section class="hero-card" id="hero">
+        <div class="hero-nav">
+          <div class="nav-pills">
+            <span class="nav-pill">Services</span>
+            <span class="nav-pill">Pricing</span>
+            <span class="nav-pill">About</span>
+            <span class="nav-pill">Insights</span>
+            <span class="nav-pill">Contact</span>
+          </div>
+          <div class="nav-actions">
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+              <span class="icon-sun" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="4.5"></circle>
+                  <path d="M12 2.5v2.5"></path>
+                  <path d="M12 19v2.5"></path>
+                  <path d="M4.6 4.6l1.8 1.8"></path>
+                  <path d="M17.6 17.6l1.8 1.8"></path>
+                  <path d="M2.5 12h2.5"></path>
+                  <path d="M19 12h2.5"></path>
+                  <path d="M4.6 19.4l1.8-1.8"></path>
+                  <path d="M17.6 6.4l1.8-1.8"></path>
+                </svg>
+              </span>
+              <span class="icon-moon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a6.5 6.5 0 0 0 11.5 11.5Z"></path>
+                </svg>
+              </span>
+            </button>
+            <span class="nav-link">Login</span>
+            <button class="nav-cta">Get Started -></button>
+          </div>
+        </div>
+
+        <div class="hero-main">
+          <div class="hero-title parallax-layer" data-depth="6">
+            <h1>CTI FORCE.</h1>
+            <div class="hero-sub">
+              ML-assisted OSINT platform for scheduled cyber incident monitoring in Indian cyberspace.
+            </div>
+          </div>
+          <div class="orb-wrap parallax-layer" data-depth="16">
+            <div class="orb"></div>
+            <div class="orb-ring"></div>
+            <div class="orb-ring ring-two"></div>
+          </div>
+          <div class="hero-metrics parallax-layer" data-depth="8">
+            <div class="metric">
+              <p class="metric-value">OSINT</p>
+              <p class="metric-label">Public sources only</p>
+            </div>
+            <div class="metric">
+              <p class="metric-value">Explainable</p>
+              <p class="metric-label">TF-IDF + classical ML</p>
+            </div>
+            <div class="metric">
+              <p class="metric-value">Scheduled</p>
+              <p class="metric-label">Hourly or daily runs</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-bottom parallax-layer" data-depth="4">
+          <div class="hero-copy">
+            The CTI system keeps your SOC workflow connected to authoritative advisories,
+            sector-specific sources, and IOC-driven correlation.
+          </div>
+          <div class="hero-list">
+            <div class="hero-list-item">Web based / 01</div>
+            <div class="hero-list-item">Collaborative / 02</div>
+            <div class="hero-list-item">Near real-time / 03</div>
+          </div>
+          <div class="hero-actions">
+            <button class="circle-cta">How it works?</button>
+            <div class="status" id="health">Checking API...</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid metrics" id="metrics"></section>
+
+      <section class="panel" id="events">
+        <div class="panel-header">
+          <div>
+            <h2>Event Intelligence</h2>
+            <p class="muted">Scheduled OSINT monitoring, correlation, and scoring</p>
+          </div>
+          <div class="filters">
+            <select id="filterSeverity"></select>
+            <select id="filterIncident"></select>
+            <select id="filterSector"></select>
+            <select id="eventPageSize">
+              <option value="10" selected>Show: 10</option>
+              <option value="25">Show: 25</option>
+              <option value="50">Show: 50</option>
+              <option value="100">Show: 100</option>
+            </select>
+          </div>
+        </div>
+        <div class="table" id="eventsTable"></div>
+        <div class="event-pagination">
+          <button id="eventPrev">Prev</button>
+          <span id="eventPageInfo">Page 1</span>
+          <span id="eventCount" class="event-count">0 items</span>
+          <button id="eventNext">Next</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Campaigns</h2>
+            <p class="muted">Graph-based grouping by IOC reuse and time windows</p>
+          </div>
+        </div>
+        <div id="campaigns"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>IOC Explorer</h2>
+            <p class="muted">High-signal indicators extracted from OSINT</p>
+          </div>
+        </div>
+        <div class="ioc-controls">
+          <input id="iocSearch" type="text" placeholder="Search indicators..." />
+          <select id="iocTypeFilter">
+            <option value="all">Type: All</option>
+          </select>
+          <select id="iocSort">
+            <option value="confidence_desc">Sort: Confidence (High → Low)</option>
+            <option value="confidence_asc">Sort: Confidence (Low → High)</option>
+            <option value="type_asc">Sort: Type (A → Z)</option>
+            <option value="value_asc">Sort: Value (A → Z)</option>
+          </select>
+          <select id="iocPageSize">
+            <option value="10" selected>Show: 10</option>
+            <option value="25">Show: 25</option>
+            <option value="50">Show: 50</option>
+            <option value="100">Show: 100</option>
+          </select>
+        </div>
+        <div id="iocs"></div>
+        <div class="ioc-pagination">
+          <button id="iocPrev">Prev</button>
+          <span id="iocPageInfo">Page 1</span>
+          <span id="iocCount" class="ioc-count">0 items</span>
+          <button id="iocNext">Next</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Latest Report</h2>
+            <p class="muted">Machine-readable JSON bundle</p>
+          </div>
+          <button id="refreshReport">Refresh</button>
+        </div>
+        <pre id="report" class="code-block">No report loaded</pre>
+      </section>
+
+      <div class="drawer" id="detailDrawer">
+        <div class="drawer-content">
+          <div class="drawer-header">
+            <h3>Event Detail</h3>
+            <button id="closeDrawer">Close</button>
+          </div>
+          <div id="detailBody"></div>
+        </div>
+      </div>
+
+      <footer class="app-footer">
+        Built for blue-team operations | OSINT only | Analyst assist
+      </footer>
+    </div>
+
+    <script src="/ui/app.js"></script>
+  </body>
+</html>
