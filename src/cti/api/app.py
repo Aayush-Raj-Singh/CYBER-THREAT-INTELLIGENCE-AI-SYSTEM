@@ -133,9 +133,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         payload = path.read_text(encoding="utf-8")
         return ReportResponse(raw_json=payload)
 
-    web_dir = _resolve_repo_path("web")
-    if web_dir.exists():
-        app.mount("/ui", StaticFiles(directory=str(web_dir), html=True), name="ui")
+    react_dist = _resolve_repo_path("web-react/dist")
+    if react_dist.exists():
+        app.mount("/ui", StaticFiles(directory=str(react_dist), html=True), name="ui")
 
         @app.get("/")
         def root() -> RedirectResponse:

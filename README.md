@@ -41,7 +41,7 @@ src/cti/           # Pipeline modules
 scripts/           # Run + training scripts
 data/              # JSONL outputs + SQLite DB
 reports/           # Report outputs
-web/               # Static UI
+web-react/         # React + Tailwind UI
 ```
 
 ## Pipeline Stages
@@ -58,6 +58,32 @@ web/               # Static UI
 - OSINT-only. No credential harvesting, no access control bypass.
 - Use public sources and respect robots/rate limits and platform ToS.
 - The system is analyst-assist, not autonomous decision-making.
+
+## Frontend (React + Tailwind)
+### 1) Install Node.js (LTS)
+Use the official Node.js installer for your OS.
+
+### 2) Install frontend dependencies
+```powershell
+cd web-react
+npm install
+```
+
+### 3) Run the React UI in dev mode
+```powershell
+npm run dev
+```
+Open the URL shown in the terminal. The dev server proxies `/api` to `http://127.0.0.1:8000`.
+
+### 4) Build the UI for FastAPI
+```powershell
+npm run build
+```
+Then run the API:
+```powershell
+py scripts/run_api.py --config config/example.yaml
+```
+Open `http://127.0.0.1:8000/ui`
 
 ## Training Models (Optional)
 Use labeled data to train models, or rely on keyword fallback.
