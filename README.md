@@ -34,6 +34,8 @@ py scripts/run_api.py --config config/example.yaml
 ```
 Open `http://127.0.0.1:8000/ui`
 
+Note: The UI is now React + Tailwind in `web-react/`. The old `web/` static UI was removed.
+
 ## Project Structure
 ```
 config/            # YAML configs
