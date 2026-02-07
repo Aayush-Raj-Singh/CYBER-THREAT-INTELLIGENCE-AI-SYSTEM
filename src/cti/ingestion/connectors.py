@@ -19,6 +19,7 @@ class SourceConfig:
     type: str
     url: Optional[str] = None
     path: Optional[str] = None
+    text_prefix: Optional[str] = None
     content_selector: Optional[str] = None
     title_selector: Optional[str] = None
     text_fields: Optional[List[str]] = None
@@ -62,6 +63,7 @@ class RssFeedConnector(SourceConnector):
                 entry.get("summary"),
                 _content_from_entry(entry),
             )
+            raw_text = _apply_prefix(raw_text, self.config.text_prefix)
             if not raw_text:
                 continue
             events.append(
@@ -95,6 +97,7 @@ class HtmlPageConnector(SourceConnector):
         title = _extract_text(soup, self.config.title_selector) if self.config.title_selector else ""
         body = _extract_text(soup, self.config.content_selector) if self.config.content_selector else soup.get_text(" ")
         raw_text = _join_parts(title, body)
+        raw_text = _apply_prefix(raw_text, self.config.text_prefix)
 
         if not raw_text:
             return []
@@ -127,6 +130,7 @@ class JsonApiConnector(SourceConnector):
         events: List[RawEvent] = []
         for item in items[: self._max_items()]:
             raw_text = _extract_text_fields(item, self.config.text_fields)
+            raw_text = _apply_prefix(raw_text, self.config.text_prefix)
             if not raw_text:
                 continue
             events.append(
@@ -162,6 +166,7 @@ class FileConnector(SourceConnector):
                 except json.JSONDecodeError:
                     item = {"text": line}
                 raw_text = _extract_text_fields(item, self.config.text_fields) or item.get("text")
+                raw_text = _apply_prefix(raw_text, self.config.text_prefix)
                 if not raw_text:
                     continue
                 events.append(
@@ -182,9 +187,55 @@ class FileConnector(SourceConnector):
         return int(self.config.max_items or 0)
 
 
+class TextFeedConnector(SourceConnector):
+    def fetch(self) -> List[RawEvent]:
+        if not self.config.url:
+            raise ValueError("Text feed source requires url")
+
+        headers = _conditional_headers(self.state, self.config.url)
+        response = self._safe_get(self.config.url, headers=headers)
+        if response is None:
+            return []
+        _update_feed_state(self.state, self.config.url, response)
+
+        events: List[RawEvent] = []
+        for line in response.text.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            raw_text = _apply_prefix(line, self.config.text_prefix)
+            if not raw_text:
+                continue
+            source_url = line if line.startswith(("http://", "https://")) else self.config.url
+            events.append(
+                RawEvent(
+                    event_id=new_event_id(),
+                    source=self.config.name,
+                    source_url=source_url,
+                    fetched_at=datetime.utcnow(),
+                    raw_text=raw_text,
+                    raw_metadata={"indicator": line},
+                )
+            )
+            if self._max_items() and len(events) >= self._max_items():
+                break
+        return events
+
+    def _max_items(self) -> int:
+        return int(self.config.max_items or 50)
+
+
 def _join_parts(*parts: Optional[str]) -> str:
     cleaned = [part.strip() for part in parts if part and part.strip()]
     return "\n".join(cleaned)
+
+
+def _apply_prefix(text: str, prefix: Optional[str]) -> str:
+    if not text:
+        return ""
+    if prefix and prefix.strip():
+        return f"{prefix.strip()} {text}"
+    return text
 
 
 def _content_from_entry(entry: Any) -> str:

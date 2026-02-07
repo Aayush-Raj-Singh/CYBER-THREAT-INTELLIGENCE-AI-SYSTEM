@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 import logging
+import os
 
 from cti.ingestion.connectors import (
     FileConnector,
     HtmlPageConnector,
     JsonApiConnector,
     RssFeedConnector,
+    TextFeedConnector,
     SourceConfig,
 )
 from cti.ingestion.http_client import HttpClient, RateLimiter
@@ -75,11 +77,16 @@ class IngestionManager:
 
         def add_sources(source_list: List[Dict[str, Any]]) -> None:
             for src in source_list:
+                if not src.get("enabled", True):
+                    continue
+                url = _expand_env(src.get("url"))
+                path = _expand_env(src.get("path"))
                 source_config = SourceConfig(
                     name=src.get("name", "unknown"),
                     type=src.get("type", "rss"),
-                    url=src.get("url"),
-                    path=src.get("path"),
+                    url=url,
+                    path=path,
+                    text_prefix=src.get("text_prefix"),
                     content_selector=src.get("content_selector"),
                     title_selector=src.get("title_selector"),
                     text_fields=src.get("text_fields"),
@@ -93,6 +100,7 @@ class IngestionManager:
         add_sources(self.sources_cfg.get("telegram_channels", []))
         add_sources(self.sources_cfg.get("advisories", []))
         add_sources(self.sources_cfg.get("blogs", []))
+        add_sources(self.sources_cfg.get("threat_feeds", []))
 
         return connectors
 
@@ -107,4 +115,12 @@ class IngestionManager:
             return JsonApiConnector(config, self.client, self.state)
         if source_type == "file":
             return FileConnector(config, self.client, self.state)
+        if source_type == "text_feed":
+            return TextFeedConnector(config, self.client, self.state)
         raise ValueError(f"Unsupported source type: {config.type}")
+
+
+def _expand_env(value: Any) -> Any:
+    if not isinstance(value, str):
+        return value
+    return os.path.expandvars(value)

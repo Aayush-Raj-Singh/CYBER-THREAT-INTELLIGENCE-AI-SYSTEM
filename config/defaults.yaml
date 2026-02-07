@@ -37,6 +37,7 @@ ingestion:
     telegram_channels: []
     advisories: []
     blogs: []
+    threat_feeds: []
 
 preprocessing:
   input_raw_path: "data/raw_events.jsonl"

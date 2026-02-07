@@ -36,6 +36,8 @@ Open `http://127.0.0.1:8000/ui`
 
 Note: The UI is now React + Tailwind in `web-react/`. The old `web/` static UI was removed.
 
+Threat feed tip: `config/example.yaml` includes free IOC feeds (OpenPhish, URLhaus, PhishTank). Some feeds have rate limits or optional API keys.
+
 ## Project Structure
 ```
 config/            # YAML configs

@@ -309,7 +309,7 @@ export default function App() {
                 Login
               </button>
               <button className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:shadow-lg dark:bg-white dark:text-slate-900">
-                Get Started ->
+                Get Started -&gt;
               </button>
             </div>
           </nav>
@@ -555,10 +555,10 @@ export default function App() {
               onChange={(event) => setIocSort(event.target.value)}
               className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
             >
-              <option value="confidence_desc">Sort: Confidence (High -> Low)</option>
-              <option value="confidence_asc">Sort: Confidence (Low -> High)</option>
-              <option value="type_asc">Sort: Type (A -> Z)</option>
-              <option value="value_asc">Sort: Value (A -> Z)</option>
+              <option value="confidence_desc">Sort: Confidence (High -&gt; Low)</option>
+              <option value="confidence_asc">Sort: Confidence (Low -&gt; High)</option>
+              <option value="type_asc">Sort: Type (A -&gt; Z)</option>
+              <option value="value_asc">Sort: Value (A -&gt; Z)</option>
             </select>
             <select
               value={iocPageSize}

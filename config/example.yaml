@@ -92,6 +92,31 @@ ingestion:
         type: "rss"
         url: "https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=20"
 
+    threat_feeds:
+      # Phishing URLs (OpenPhish community feed - free)
+      - name: "OpenPhish Community Feed"
+        type: "text_feed"
+        url: "https://raw.githubusercontent.com/openphish/public_feed/refs/heads/main/feed.txt"
+        text_prefix: "Phishing URL observed:"
+        max_items: 200
+
+      # Malware URLs (URLhaus text feed - free)
+      - name: "URLhaus Malware URLs"
+        type: "text_feed"
+        url: "https://urlhaus.abuse.ch/downloads/text/"
+        text_prefix: "Malware URL observed:"
+        max_items: 200
+
+      # Phishing submissions (PhishTank online-valid JSON)
+      # For higher limits, set PHISHTANK_APP_KEY and replace the URL:
+      # http://data.dev.phishtank.com/data/${PHISHTANK_APP_KEY}/online-valid.json
+      - name: "PhishTank Online Valid (JSON)"
+        type: "json_api"
+        url: "http://data.dev.phishtank.com/data/online-valid.json"
+        text_fields: ["url", "phish_detail_url"]
+        text_prefix: "Phishing URL observed:"
+        max_items: 200
+
 
 preprocessing:
   input_raw_path: "data/raw_events.jsonl"
