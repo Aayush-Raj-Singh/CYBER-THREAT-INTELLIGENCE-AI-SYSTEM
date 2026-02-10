@@ -1,0 +1,173 @@
+project:
+  name: "CTI AI System"
+  country_focus: "India"
+  timezone: "Asia/Kolkata"
+
+logging:
+  level: "INFO"
+  json: false
+
+paths:
+  data_dir: "data"
+  models_dir: "models"
+  reports_dir: "reports"
+
+pipeline:
+  stages:
+    - "ingestion"
+    - "preprocessing"
+    - "ioc_extraction"
+    - "analysis"
+    - "correlation"
+    - "scoring"
+    - "storage"
+    - "reporting"
+  fail_fast: true
+
+ingestion:
+  rate_limit_per_minute: 30
+  user_agent: "CTI-OSINT-Collector/1.0"
+  timeout_seconds: 15
+  retries: 2
+  backoff_seconds: 1.0
+  output_raw_path: "data/raw_events.jsonl"
+  sources:
+    paste_sites: []
+    forums: []
+    telegram_channels: []
+    advisories: []
+    blogs: []
+    threat_feeds: []
+
+preprocessing:
+  input_raw_path: "data/raw_events.jsonl"
+  output_normalized_path: "data/normalized_events.jsonl"
+  min_text_length: 20
+  min_token_length: 2
+  noise_patterns: []
+  allowed_languages: []
+
+ioc_extraction:
+  input_normalized_path: "data/normalized_events.jsonl"
+  output_iocs_path: "data/iocs.jsonl"
+  min_confidence: 0.75
+
+ml:
+  incident_classifier:
+    min_confidence: 0.60
+    model_path: "models/incident_classifier.joblib"
+    fallback_keywords:
+      phishing: ["phish", "credential", "spoof", "fake login", "otp"]
+      malware: ["malware", "trojan", "ransomware", "payload"]
+      ddos: ["ddos", "denial of service", "botnet"]
+      breach: ["data breach", "leak", "exfiltration"]
+  sector_classifier:
+    min_confidence: 0.60
+    model_path: "models/sector_classifier.joblib"
+    fallback_keywords:
+      banking: ["bank", "fintech", "payment", "upi"]
+      government: ["gov", "government", "ministry", "department"]
+      telecom: ["telecom", "isp", "mobile operator"]
+      healthcare: ["hospital", "healthcare", "clinic"]
+  clustering:
+    enabled: true
+    min_cluster_size: 3
+    algorithm: "kmeans"
+    n_clusters: 0
+    max_features: 5000
+    ngram_range: [1, 2]
+    stop_words: "english"
+    dbscan_eps: 0.5
+    dbscan_min_samples: 3
+  vectorizer:
+    max_features: 8000
+    ngram_range: [1, 2]
+    min_df: 2
+    max_df: 0.95
+    stop_words: "english"
+  classifier:
+    max_iter: 200
+    C: 1.0
+    class_weight: "balanced"
+    test_size: 0.2
+  weak_labeling:
+    weights:
+      text: 1.0
+      domain: 0.7
+    thresholds:
+      incident_min_score: 1.0
+      sector_min_score: 0.6
+      margin: 0.2
+    incident_keywords:
+      phishing: ["phishing", "credential", "spoof", "fake login", "otp", "smishing", "vishing"]
+      malware: ["malware", "trojan", "ransomware", "payload", "backdoor", "dropper"]
+      ddos: ["ddos", "denial of service", "botnet", "traffic flood"]
+      breach: ["data breach", "leak", "exfiltration", "exposed data"]
+    sector_keywords:
+      banking: ["bank", "fintech", "payment", "upi", "atm", "netbanking"]
+      telecom: ["telecom", "telco", "isp", "mobile operator", "5g", "4g"]
+      healthcare: ["hospital", "healthcare", "clinic", "patient", "medical"]
+      govt: ["government", "ministry", "department", "public sector", "psu"]
+      defence: ["defence", "defense", "military", "drdo", "mod"]
+      finance: ["finance", "sebi", "irdai", "insurance", "nbfc"]
+      corporate: ["corporate", "enterprise", "company", "firm", "business"]
+    source_domain_map:
+      "rbi.org.in": "banking"
+      "sebi.gov.in": "corporate"
+      "irdai.gov.in": "finance"
+      "trai.gov.in": "telecom"
+      "dot.gov.in": "telecom"
+      "mohfw.gov.in": "healthcare"
+      "drdo.gov.in": "defence"
+      "cert-in.org.in": "govt"
+      "pib.gov.in": "govt"
+
+analysis:
+  input_normalized_path: "data/normalized_events.jsonl"
+  output_analysis_path: "data/analysis_results.jsonl"
+
+correlation:
+  input_analysis_path: "data/analysis_results.jsonl"
+  input_iocs_path: "data/iocs.jsonl"
+  input_normalized_path: "data/normalized_events.jsonl"
+  output_correlation_path: "data/correlation_results.jsonl"
+  output_campaigns_path: "data/campaigns.jsonl"
+  temporal_window_hours: 24
+  min_shared_iocs: 1
+  min_campaign_size: 2
+  use_analysis_clusters: true
+  use_temporal_window: true
+  weights:
+    shared_ioc: 0.4
+    analysis_cluster: 0.2
+    temporal: 0.2
+    incident_conf: 0.1
+    sector_conf: 0.1
+
+scoring:
+  severity_thresholds:
+    low: 0.30
+    medium: 0.60
+    high: 0.80
+  weights:
+    incident_conf: 0.35
+    sector_conf: 0.15
+    correlation_conf: 0.30
+    ioc_count: 0.10
+    mitre_tactics: 0.10
+  input_analysis_path: "data/analysis_results.jsonl"
+  input_correlation_path: "data/correlation_results.jsonl"
+  input_iocs_path: "data/iocs.jsonl"
+  output_scores_path: "data/scores.jsonl"
+
+storage:
+  db_url: "sqlite:///data/cti.db"
+
+reporting:
+  input_analysis_path: "data/analysis_results.jsonl"
+  input_correlation_path: "data/correlation_results.jsonl"
+  input_scores_path: "data/scores.jsonl"
+  input_iocs_path: "data/iocs.jsonl"
+  input_campaigns_path: "data/campaigns.jsonl"
+  output_json_path: "reports/report.json"
+  output_summary_path: "reports/summary.txt"

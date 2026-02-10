@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Runtime outputs
+data/
+reports/
+models/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+
+# Frontend
+web-react/node_modules/
+web-react/dist/
+web-react/.vite/
