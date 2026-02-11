@@ -1,19 +1,19 @@
 # Cyber Threat Intelligence AI System (India Focus)
 
-A production?style, blue?team Cyber Threat Intelligence system that ingests open?source sources, normalizes and analyzes text, extracts Indicators of Compromise, correlates campaigns, scores severity and confidence, and serves a professional analyst UI with a built?in theory/reference section.
+A production-style, blue-team Cyber Threat Intelligence system that ingests open-source sources, normalizes and analyzes text, extracts Indicators of Compromise, correlates campaigns, scores severity and confidence, and serves a professional analyst UI with a built-in theory/reference section.
 
 This repository includes:
-- End?to?end CTI pipeline (ingestion ? reporting)
+- End-to-end CTI pipeline (ingestion - reporting)
 - Local FastAPI service with SQLite storage
 - React + Tailwind dashboard and documentation UI
-- Photographic SOC / data?center / threat?map imagery integrated into the documentation section
+- Photographic SOC / data?center / threat-map imagery integrated into the documentation section
 
 ---
 
 ## Key Capabilities
 
 Pipeline
-- Multi?source ingestion (RSS, HTML, JSON APIs, text feeds)
+- Multi-source ingestion (RSS, HTML, JSON APIs, text feeds)
 - Preprocessing: noise removal, language detection, tokenization
 - Indicators of Compromise extraction (IP, domain, URL, hashes, email)
 - Analysis: incident type, sector, confidence, clustering
@@ -27,7 +27,7 @@ API + UI
 - React dashboard with neon/glass SOC styling
 - Dark and light themes
 - Event Intelligence and Indicators of Compromise Explorer with pagination and sorting
-- Latest report summary rendered as analyst?friendly bullet points
+- Latest report summary rendered as analyst-friendly bullet points
 - Intelligence Docs route with structured theory and real photographic assets
 
 ---
@@ -38,7 +38,7 @@ Backend
 - Python 3.10+ (recommended)
 - FastAPI + Uvicorn
 - SQLAlchemy
-- scikit?learn, pandas, numpy
+- scikit-learn, pandas, numpy
 
 Frontend
 - React 18 + React Router
@@ -78,7 +78,7 @@ py -m pip install -r requirements.txt
 ```
 
 ### 2) Configure sources
-Edit `config/example.yaml` and replace placeholder URLs with policy?compliant sources.
+Edit `config/example.yaml` and replace placeholder URLs with policy-compliant sources.
 
 ### 3) Run the pipeline
 ```powershell
@@ -182,7 +182,7 @@ allow_origin_regex=r"https://.*\.cti-portal\.pages\.dev",
 
 ## Configuration Guide (`config/example.yaml`)
 
-High?value keys to review:
+High-value keys to review:
 - `project.name`, `project.country_focus`, `project.timezone`
 - `ingestion.sources.*`: public advisories, blogs, and threat feeds
 - `preprocessing`: text length thresholds, language allow?list
@@ -302,7 +302,7 @@ py scripts/train_models.py --input data/labels/training_labels.csv --text-field 
 py scripts/train_models.py --input data/labels/training_labels.csv --text-field text --label-field sector_label --model-type sector --output models/sector_classifier.joblib
 ```
 
-Auto?train with weak labels:
+Auto-train with weak labels:
 ```powershell
 py scripts/auto_train.py --config config/example.yaml
 ```
