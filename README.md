@@ -62,6 +62,12 @@ web/                    # Legacy static UI (not used)
 
 ---
 
+## Live Demo
+
+UI: https://cti-portal.pages.dev
+
+---
+
 ## Quick Start (Local)
 
 ### 1) Install Python dependencies
@@ -129,6 +135,48 @@ Notes:
 - Dev mode: proxied to `http://127.0.0.1:8000`
 - Production build: Vite base is `/ui/`
 - Optional override: set `VITE_API_BASE` to point the UI to another API host
+- Example template: `web-react/.env.example`
+- Local production override: create `web-react/.env.production`
+
+---
+
+## Production Deployment (Cloud Run + Cloudflare Pages)
+
+This setup serves live data from Cloud Run and a static UI from Cloudflare Pages.
+
+### 1) Backend (Cloud Run)
+1. Build and deploy:
+   ```powershell
+   cd C:\Users\aayus\OneDrive\Desktop\cyber-threat-intelligence
+   gcloud builds submit --tag asia-south1-docker.pkg.dev/cti-ui2026/cti-api/cti-api:latest
+   gcloud run deploy cti-api --image asia-south1-docker.pkg.dev/cti-ui2026/cti-api/cti-api:latest --region asia-south1 --allow-unauthenticated
+   ```
+2. Set env vars so the API reads the latest pipeline outputs:
+   - `GCS_BUCKET=cti-ui2026-cti-data`
+   - `GCS_PREFIX=latest`
+
+### 2) Frontend (Cloudflare Pages)
+1. Create `web-react/.env.production`:
+   ```
+   VITE_API_BASE=https://YOUR-CLOUD-RUN-URL
+   ```
+2. Build and deploy:
+   ```powershell
+   cd web-react
+   npm run build -- --base=/
+   npx wrangler pages deploy dist --project-name "cti-portal" --commit-dirty=true
+   ```
+
+### 3) CORS
+Allow the Pages domain (and previews) in `src/cti/api/app.py`:
+```python
+allow_origins=[
+  "https://cti-portal.pages.dev",
+  "https://cyber-threat-intelligence.pages.dev",
+  "http://localhost:5173",
+],
+allow_origin_regex=r"https://.*\.cti-portal\.pages\.dev",
+```
 
 ---
 
