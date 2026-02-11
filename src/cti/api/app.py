@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import os
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from google.cloud import storage
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func
 from sqlalchemy.orm import Session, sessionmaker
@@ -32,11 +36,24 @@ from cti.storage.models import (
 
 def create_app(config_path: Optional[str] = None) -> FastAPI:
     config: Dict[str, Any] = load_config(config_path)
+    config = _sync_from_gcs(config)
     db_url = config.get("storage", {}).get("db_url", "sqlite:///data/cti.db")
     engine = create_db_engine(db_url)
     SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
     app = FastAPI(title="CTI AI System", version="1.0")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "https://cti-portal.pages.dev",
+            "https://cyber-threat-intelligence.pages.dev",
+            "http://localhost:5173",
+        ],
+        allow_origin_regex=r"https://.*\.cti-portal\.pages\.dev",
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.get("/api/health", response_model=HealthResponse)
     def health() -> HealthResponse:
@@ -151,6 +168,41 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
 
     return app
 
+
+def _sync_from_gcs(config: Dict[str, Any]) -> Dict[str, Any]:
+    bucket_name = os.getenv("GCS_BUCKET")
+    if not bucket_name:
+        return config
+    prefix = os.getenv("GCS_PREFIX", "").strip("/")
+    tmp_dir = Path(tempfile.gettempdir()) / "cti"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    db_path = tmp_dir / "cti.db"
+    report_path = tmp_dir / "report.json"
+
+    def _blob_name(name: str) -> str:
+        return f"{prefix}/{name}" if prefix else name
+
+    try:
+        client = storage.Client()
+        bucket = client.bucket(bucket_name)
+        db_blob = bucket.blob(_blob_name("cti.db"))
+        if not db_blob.exists():
+            return config
+        db_blob.download_to_filename(str(db_path))
+        report_blob = bucket.blob(_blob_name("report.json"))
+        if report_blob.exists():
+            report_blob.download_to_filename(str(report_path))
+    except Exception:
+        return config
+
+    config = dict(config)
+    storage_cfg = dict(config.get("storage", {}))
+    storage_cfg["db_url"] = f"sqlite:///{db_path.as_posix()}"
+    config["storage"] = storage_cfg
+    reporting_cfg = dict(config.get("reporting", {}))
+    reporting_cfg["output_json_path"] = str(report_path)
+    config["reporting"] = reporting_cfg
+    return config
 
 def _resolve_repo_path(path_value: str) -> Path:
     repo_root = Path(__file__).resolve().parents[3]
@@ -267,3 +319,4 @@ def _count_by_sector(session: Session) -> Dict[str, int]:
         .all()
     )
     return {label: int(count) for label, count in rows}
+

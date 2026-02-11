@@ -1,0 +1,11 @@
+.git
+.gitignore
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+web-react/node_modules
+web-react/dist
+web-react/.vite
+node_modules
+.env

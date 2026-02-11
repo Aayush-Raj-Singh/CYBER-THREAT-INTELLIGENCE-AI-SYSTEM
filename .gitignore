@@ -24,3 +24,12 @@ Thumbs.db
 web-react/node_modules/
 web-react/dist/
 web-react/.vite/
+
+# Tooling
+.wrangler/
+.venv/
+venv/
+
+# Env examples
+!.env.example
+!web-react/.env.example

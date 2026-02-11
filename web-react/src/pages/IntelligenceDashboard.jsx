@@ -5,7 +5,9 @@ import { useTheme } from "../hooks/useTheme";
 import { useLayoutWidth } from "../hooks/useLayoutWidth";
 
 /* ===================== API CONFIG ===================== */
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+const RAW_API_BASE =
+  import.meta.env.VITE_API_BASE || "https://cti-api-ao3xop3ova-el.a.run.app";
+const API_BASE = RAW_API_BASE.replace(/\/$/, "");
 const api = {
   health: `${API_BASE}/api/health`,
   summary: `${API_BASE}/api/summary`,
@@ -30,12 +32,12 @@ const toNumber = (v) => (Number.isFinite(+v) ? +v : 0);
 const formatNumber = (v) => new Intl.NumberFormat("en-IN").format(toNumber(v));
 
 const severityBadge = (s = "informational") =>
-  ({
-    high: "badge badge-high",
-    medium: "badge badge-medium",
-    low: "badge badge-low",
-    informational: "badge badge-informational",
-  }[s] || "badge badge-informational");
+({
+  high: "badge badge-high",
+  medium: "badge badge-medium",
+  low: "badge badge-low",
+  informational: "badge badge-informational",
+}[s] || "badge badge-informational");
 
 const fetchJSON = async (url) => {
   const res = await fetch(url);
@@ -322,9 +324,8 @@ export default function IntelligenceDashboard() {
 
   const SortIndicator = ({ active, direction }) => (
     <span
-      className={`text-[10px] ${
-        active ? "text-emerald-500 dark:text-emerald-300" : "text-slate-400"
-      }`}
+      className={`text-[10px] ${active ? "text-emerald-500 dark:text-emerald-300" : "text-slate-400"
+        }`}
     >
       {active ? (direction === "asc" ? "^" : "v") : "<>"}
     </span>
@@ -352,7 +353,7 @@ export default function IntelligenceDashboard() {
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <div
-        className="layout-container mx-auto px-6 py-10"
+        className="layout-container mx-auto px-4 sm:px-6 py-8 sm:py-10"
         style={{ "--layout-width": `${layoutWidth}vw` }}
       >
         {/* HERO */}
@@ -370,7 +371,7 @@ export default function IntelligenceDashboard() {
           <TopNav theme={theme} onToggleTheme={toggleTheme} />
 
           <div className="mt-8">
-            <h1 className="text-5xl font-extrabold">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight">
               <span className="hero-title">Cyber Threat Intelligence Force.</span>
             </h1>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
@@ -498,13 +499,15 @@ export default function IntelligenceDashboard() {
               {sortedEvents.length ? (
                 sortedEvents.map((e) => (
                   <div key={e.event_id} className="table-row">
-                    <span>{e.event_id?.slice(0, 8)}</span>
-                    <span>{e.incident_type}</span>
-                    <span>{e.sector}</span>
-                    <span className={severityBadge(e.severity_label)}>
-                      {e.severity_label}
-                    </span>
-                    <span>{toNumber(e.confidence).toFixed(2)}</span>
+                    <div data-label="Event ID">{e.event_id?.slice(0, 8)}</div>
+                    <div data-label="Incident Type">{e.incident_type}</div>
+                    <div data-label="Sector">{e.sector}</div>
+                    <div data-label="Severity">
+                      <span className={severityBadge(e.severity_label)}>
+                        {e.severity_label}
+                      </span>
+                    </div>
+                    <div data-label="Confidence">{toNumber(e.confidence).toFixed(2)}</div>
                   </div>
                 ))
               ) : (
@@ -607,11 +610,11 @@ export default function IntelligenceDashboard() {
               {sortedIocs.length ? (
                 sortedIocs.map((ioc, i) => (
                   <div key={i} className="ioc-row">
-                    <span className="truncate">
+                    <div data-label="Indicator" className="break-all sm:truncate">
                       {ioc.normalized_value || ioc.value}
-                    </span>
-                    <span>{ioc.ioc_type}</span>
-                    <span>{toNumber(ioc.confidence).toFixed(2)}</span>
+                    </div>
+                    <div data-label="Type">{ioc.ioc_type}</div>
+                    <div data-label="Confidence">{toNumber(ioc.confidence).toFixed(2)}</div>
                   </div>
                 ))
               ) : (
